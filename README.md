@@ -1,6 +1,6 @@
-# Resemble.AI LiveVC Socket Client
+# Resemble.AI Live STS Socket Client
 
-This repository contains a fully featured sample script to demonstrate how to connect to the Resemble.AI LiveVC server using Socket.IO for real-time voice conversion.
+This repository contains a fully featured sample script to demonstrate how to connect to the Resemble.AI Live STS server using Socket.IO for real-time speech-to-speech.
 
 ## Table of Contents
 - [Installation](#installation)
