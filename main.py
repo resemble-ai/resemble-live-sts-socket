@@ -21,6 +21,8 @@ from constants import SAMPLERATE, CHUNK_SIZE_MULT, AUDIO_FORMAT, ENDPOINT
 from datatypes import MessageResponse, AudioData, VoiceSettings, HTTPStatus
 from devices import choose_devices
 
+rtf_list = []
+
 class SynthesizeNamespace(socketio.ClientNamespace):
     """
     Custom namespace for handling Socket.IO events.
@@ -134,25 +136,20 @@ def playback_callback(outdata: np.ndarray, frames: int, t: object, status: sd.Ca
     """
     if status:
         logging.warning(status)
+
     if not playback_queue.empty():
         audio_data, processing_time = playback_queue.get()
-        outdata[:len(audio_data)] = audio_data.reshape(-1, 1)
+        audio_length = len(audio_data)
+        outdata[:audio_length, 0] = audio_data  # Directly assign to the buffer slice
+
+        playback_duration = 1000 * audio_length / SAMPLERATE
+        rtf_list.append(processing_time / playback_duration)
         
-        # Fill the rest of the buffer with zeros if the audio_data is smaller than the buffer
-        if len(audio_data) < frames:
+        if audio_length < frames:
             logging.warning('[OUTPUT] Audio data is smaller than the buffer! Filling with zeros...')
-            outdata[len(audio_data):] = np.zeros((frames - len(audio_data), 1), dtype=AUDIO_FORMAT)
-        
-        # Calculate Real-Time Factor (RTF)
-        playback_duration = 1000 * len(audio_data) / SAMPLERATE
-        rtf = processing_time / playback_duration
-        logging.info('[PERF] RTF %.2f Server time: %.2f ms', rtf, processing_time)
-        
-        # Write the processed audio to the WAV file
-        wav_file.writeframes(audio_data.tobytes())
+            outdata[audio_length:, 0] = 0  # Fill the rest with zeros
     else:
-        # Fill with zeros if no audio data is available
-        outdata.fill(0)  
+        outdata.fill(0)  # Fill with zeros if no audio data is available
 
 def main(server_url: str, 
          auth: str, 
@@ -198,17 +195,18 @@ def main(server_url: str,
     wav_file.setframerate(SAMPLERATE)
 
     # Start the audio streams
-    with sd.InputStream(callback=audio_callback, channels=1, dtype='float32', samplerate=SAMPLERATE, blocksize=chunk_size, device=input_device):
-        with sd.OutputStream(callback=playback_callback, channels=1, dtype=AUDIO_FORMAT, samplerate=SAMPLERATE, blocksize=chunk_size, device=output_device):
-            logging.info('[INFO] Recording... Press Ctrl+C to stop')
-            try:
+    try:
+        with sd.InputStream(callback=audio_callback, channels=1, dtype='float32', samplerate=SAMPLERATE, blocksize=chunk_size, device=input_device):
+            with sd.OutputStream(callback=playback_callback, channels=1, dtype=AUDIO_FORMAT, samplerate=SAMPLERATE, blocksize=chunk_size, device=output_device):
+                logging.info('[INFO] Recording... Press Ctrl+C to stop')
                 while True:
-                    time.sleep(1)
-            except KeyboardInterrupt:
-                pass
+                    sd.sleep(1)
+    except KeyboardInterrupt:
+        pass
     # Cleanup
     wav_file.close()
     sio.disconnect()
+    logging.info(f'------- Average RTF {sum(rtf_list[5:])/len(rtf_list[5:]):0.3f} -------')
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Resemble.AI LiveVC socket sample script. Press Ctrl+C to stop.')
