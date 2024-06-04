@@ -1,0 +1,8 @@
+argparse==1.4.0
+sounddevice==0.4.7
+wave==0.0.2
+python-socketio==5.11.2
+urllib3==2.2.1
+numpy==1.26.4
+requests==2.32.3
+websocket-client==1.8.0
