@@ -83,7 +83,7 @@ class SynthesizeNamespace(socketio.ClientNamespace):
         logging.info('[SIO↑] Changing settings...')
 
         # wait for the server to respond before continuing
-        self.call('update_model_settings', settings)
+        self.emit('update_model_settings', settings)
 
     def send_audio(self, audio_data: AudioData):
         """
@@ -102,7 +102,7 @@ class SynthesizeNamespace(socketio.ClientNamespace):
         """
 
         logging.info('[SIO↑] Getting settings...')
-        self.call('get_settings')
+        self.emit('get_settings')
 
 def audio_callback(indata: np.ndarray, frames: int, t: object, status: sd.CallbackFlags) -> None:    
     """
@@ -183,7 +183,7 @@ def main(server_url: str,
     sio.register_namespace(synthesize)    
     headers={'Authorization': 'Basic ' + base64.b64encode(auth.encode()).decode()} if auth else None
     sio.connect(server_url, namespaces=[ENDPOINT], headers=headers)
-    
+
     # Update and read server parameters
     synthesize.change_settings(voice_settings)
     synthesize.get_settings()
