@@ -1,9 +1,9 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
-#  Sample script to demonstrate how to connect to the Resemble.AI LiveVC  #
-#  server using Socket.IO for real-time voice conversion.                 #
+# Sample script to demonstrate how to connect to the Resemble.AI Live STS #
+# server using Socket.IO for real-time voice conversion.                  #
 #                                                                         #
-#  Date:    2024-06-03                                                    #
-#  Rev:     1.0                                                           #
+# Date:    2024-06-03                                                     #
+# Rev:     1.0                                                            #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
 import sounddevice as sd
