@@ -150,6 +150,9 @@ def playback_callback(outdata: np.ndarray, frames: int, t: object, status: sd.Ca
             outdata[audio_length:, 0] = 0  # Fill the rest with zeros
     else:
         outdata.fill(0)  # Fill with zeros if no audio data is available
+    
+    # write the audio data to the wav file
+    wav_file.writeframes(outdata)
 
 def main(server_url: str, 
          auth: str, 
