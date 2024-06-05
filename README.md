@@ -19,7 +19,7 @@ This repository contains a fully featured sample script to demonstrate how to co
 
 2. Install the required dependencies:
     ```sh
-    conda create socket_demo python=3.11.4
+    conda create -n socket_demo python=3.11.4
     pip install -r requirements.txt
     ```
 
