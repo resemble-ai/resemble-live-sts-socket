@@ -40,7 +40,10 @@ python main.py --url <server_url> --voice <voice> \
 
 ## Arguments
 ```yaml
-usage: main.py [-h] --url URL [--auth AUTH] [--debug] [--num_chunks NUM_CHUNKS] [--wave_file_path WAVE_FILE_PATH] [--voice VOICE] [--vad VAD] [--gpu GPU] [--extra_convert_size EXTRA_CONVERT_SIZE] [--pitch PITCH] [--crossfade_offset_rate CROSSFADE_OFFSET_RATE] [--crossfade_end_rate CROSSFADE_END_RATE] [--crossfade_overlap_size CROSSFADE_OVERLAP_SIZE] [--input_device INPUT_DEVICE] [--output_device OUTPUT_DEVICE]
+usage: main.py [-h] --url URL [--auth AUTH] [--debug] [--num_chunks NUM_CHUNKS] [--wave_file_path WAVE_FILE_PATH]
+[--voice VOICE] [--vad VAD] [--gpu GPU] [--extra_convert_size EXTRA_CONVERT_SIZE] [--pitch PITCH]
+[--crossfade_offset_rate CROSSFADE_OFFSET_RATE] [--crossfade_end_rate CROSSFADE_END_RATE]
+[--crossfade_overlap_size CROSSFADE_OVERLAP_SIZE] [--input_device INPUT_DEVICE] [--output_device OUTPUT_DEVICE]
 
 Resemble.AI LiveVC socket sample script. Press Ctrl+C to stop.
 
@@ -58,7 +61,8 @@ voice parameters:
   --voice VOICE                                         Name of the voice to use for synthesis.
   --vad VAD                                             VAD level (0: off, 1: low, 2: medium, 3: high) (default: 1).
   --gpu GPU                                             CUDA device ID (default: 0).
-  --extra_convert_size EXTRA_CONVERT_SIZE               Amount of context for the server to use (4096, 8192, 16384, 32768, 65536, 131072) (default: 4096).
+  --extra_convert_size EXTRA_CONVERT_SIZE               Amount of context for the server to use (4096, 8192, 16384,
+                                                                             32768, 65536, 131072) (default: 4096).
   --pitch PITCH                                         Pitch factor (default: 0).
   --crossfade_offset_rate CROSSFADE_OFFSET_RATE         Crossfade offset rate (0.0 - 1.0) (default: 0.1)
   --crossfade_end_rate CROSSFADE_END_RATE               Crossfade end rate (0.0 - 1.0) (default: 0.9).
