@@ -9,6 +9,7 @@ class AudioData(TypedDict):
     timestamp: int      # milliseconds
     audio_data: bytes   # packed little-endian short integers
 class VoiceSettings(TypedDict):
+    voice: str                 # The name of the desired voice
     crossFadeOffsetRate: float # 0.0 - 1.0
     crossFadeEndRate: float    # 0.0 - 1.0 
     crossFadeOverlapSize: int  # 2048
