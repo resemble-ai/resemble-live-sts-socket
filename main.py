@@ -2,8 +2,8 @@
 # Sample script to demonstrate how to connect to the Resemble.AI Live STS #
 # server using Socket.IO for real-time voice conversion.                  #
 #                                                                         #
-# Date:    2024-06-03                                                     #
-# Rev:     1.0                                                            #
+# Date:    2024-08-14                                                     #
+# Rev:     1.1                                                            #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
 import sounddevice as sd
@@ -23,20 +23,25 @@ from devices import choose_devices
 
 rtf_list = []
 
+
 class SynthesizeNamespace(socketio.ClientNamespace):
     """
     Custom namespace for handling Socket.IO events.
     """
+
     def __init__(self, namespace):
         super().__init__(namespace)
 
-    def on_connect(self):
+    @staticmethod
+    def on_connect():
         logging.info('[SIO↕] Connected to the %s namespace', ENDPOINT)
 
-    def on_disconnect(self):
+    @staticmethod
+    def on_disconnect():
         logging.info('[SIO↕] Disconnected from the %s namespace', ENDPOINT)
 
-    def on_response(self, msg: AudioData):
+    @staticmethod
+    def on_response(msg: AudioData):
         """
         Called when the client receives a response from the server for voice conversion.
         
@@ -53,9 +58,10 @@ class SynthesizeNamespace(socketio.ClientNamespace):
         audio_data = np.array(unpacked_data, dtype=AUDIO_FORMAT)
 
         # Queue the processed audio data for playback
-        playback_queue.put((audio_data, response_time)) 
+        playback_queue.put((audio_data, response_time))
 
-    def on_message(self, msg: MessageResponse):
+    @staticmethod
+    def on_message(msg: MessageResponse):
         """
         Called when the client receives a message from the server.
         
@@ -63,7 +69,7 @@ class SynthesizeNamespace(socketio.ClientNamespace):
         msg (MessageResponse): The message received from the server.
         """
         status = HTTPStatus(msg['status'])
-        
+
         # check if the message is in the 200s, 300s, or 400s and log accordingly
         if status < 300:
             logging.info(f'[SIO↓] {msg["message"]}')
@@ -71,7 +77,6 @@ class SynthesizeNamespace(socketio.ClientNamespace):
             logging.warning(f'[SIO↓] {msg["message"]}')
         else:
             logging.error(f'[SIO↓] {msg["message"]}')
-
 
     def change_settings(self, settings: VoiceSettings):
         """
@@ -95,7 +100,7 @@ class SynthesizeNamespace(socketio.ClientNamespace):
 
         logging.debug('[SIO↑] Sending audio data to server')
         self.emit('request_conversion', audio_data)
-    
+
     def get_settings(self):
         """
         Get the current settings from the server.
@@ -104,7 +109,8 @@ class SynthesizeNamespace(socketio.ClientNamespace):
         logging.info('[SIO↑] Getting settings...')
         self.emit('get_settings')
 
-def audio_callback(indata: np.ndarray, frames: int, t: object, status: sd.CallbackFlags) -> None:    
+
+def audio_callback(indata: np.ndarray, frames: int, t: object, status: sd.CallbackFlags) -> None:
     """
     Callback function for handling audio input.
     
@@ -117,12 +123,13 @@ def audio_callback(indata: np.ndarray, frames: int, t: object, status: sd.Callba
 
     if status:
         logging.warning(status)
-    
+
     # Convert the recorded audio chunk to int16 format and bytes
     audio_chunk = (indata * 32767).astype(AUDIO_FORMAT).flatten()
     audio_chunk = struct.pack('<%sh' % len(audio_chunk), *audio_chunk)
-    
+
     synthesize.send_audio({'timestamp': int(time.time() * 1000), 'audio_data': audio_chunk})
+
 
 def playback_callback(outdata: np.ndarray, frames: int, t: object, status: sd.CallbackFlags) -> None:
     """
@@ -144,22 +151,23 @@ def playback_callback(outdata: np.ndarray, frames: int, t: object, status: sd.Ca
 
         playback_duration = 1000 * audio_length / SAMPLERATE
         rtf_list.append(processing_time / playback_duration)
-        
+
         if audio_length < frames:
             logging.warning('[OUTPUT] Audio data is smaller than the buffer! Filling with zeros...')
             outdata[audio_length:, 0] = 0  # Fill the rest with zeros
     else:
         outdata.fill(0)  # Fill with zeros if no audio data is available
-    
+
     # write the audio data to the wav file
     wav_file.writeframes(outdata)
 
-def main(server_url: str, 
-         auth: str, 
-         input_device: int, 
-         output_device: int, 
-         chunk_size: int, 
-         wav_file_path: str, 
+
+def main(server_url: str,
+         auth: str,
+         input_device: int,
+         output_device: int,
+         chunk_size: int,
+         wav_file_path: str,
          voice_settings: VoiceSettings) -> None:
     """
     Main function to start the audio streams and handle server connection.
@@ -173,7 +181,7 @@ def main(server_url: str,
     wav_file_path (str): The path to save the WAV file.
     voice_settings (VoiceSettings): The settings to use for the voice.
     """
-    
+
     global wav_file
     global playback_queue
     global synthesize
@@ -183,8 +191,8 @@ def main(server_url: str,
     # Connect to the server
     synthesize = SynthesizeNamespace(ENDPOINT)
     sio = socketio.Client()
-    sio.register_namespace(synthesize)    
-    headers={'Authorization': 'Basic ' + base64.b64encode(auth.encode()).decode()} if auth else None
+    sio.register_namespace(synthesize)
+    headers = {'Authorization': 'Basic ' + base64.b64encode(auth.encode()).decode()} if auth else None
     sio.connect(server_url, namespaces=[ENDPOINT], headers=headers)
 
     # Update and read server parameters
@@ -199,8 +207,10 @@ def main(server_url: str,
 
     # Start the audio streams
     try:
-        with sd.InputStream(callback=audio_callback, channels=1, dtype='float32', samplerate=SAMPLERATE, blocksize=chunk_size, device=input_device):
-            with sd.OutputStream(callback=playback_callback, channels=1, dtype=AUDIO_FORMAT, samplerate=SAMPLERATE, blocksize=chunk_size, device=output_device):
+        with sd.InputStream(callback=audio_callback, channels=1, dtype='float32', samplerate=SAMPLERATE,
+                            blocksize=chunk_size, device=input_device):
+            with sd.OutputStream(callback=playback_callback, channels=1, dtype=AUDIO_FORMAT, samplerate=SAMPLERATE,
+                                 blocksize=chunk_size, device=output_device):
                 logging.info('[INFO] Recording... Press Ctrl+C to stop')
                 while True:
                     sd.sleep(1)
@@ -209,13 +219,14 @@ def main(server_url: str,
     # Cleanup
     wav_file.close()
     sio.disconnect()
-    logging.info(f'------- Average RTF {sum(rtf_list[5:])/len(rtf_list[5:]):0.3f} -------')
+    logging.info(f'------- Average RTF {sum(rtf_list[5:]) / len(rtf_list[5:]):0.3f} -------')
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Resemble.AI LiveVC socket sample script. Press Ctrl+C to stop.')
 
     parser.add_argument('--url', type=str, required=True, help='URL of the server (Do not include the endpoint).')
-    parser.add_argument('--auth',type=str, default=None, help='ngrok `username:password` for authentication.')
+    parser.add_argument('--auth', type=str, default=None, help='ngrok `username:password` for authentication.')
     parser.add_argument('--debug', action='store_true', help='Enable debug mode for logging.')
 
     client_parameter = parser.add_argument_group('client parameters')
@@ -243,9 +254,10 @@ def parse_args() -> argparse.Namespace:
 
     return args
 
+
 if __name__ == "__main__":
     args = parse_args()
-    
+
     chunk_size = CHUNK_SIZE_MULT * args.num_chunks
     buffer_length = int(1000 * chunk_size / SAMPLERATE)
 
@@ -260,7 +272,7 @@ if __name__ == "__main__":
         output_device = args.output_device
     else:
         input_device, output_device = choose_devices()
-    
+
     voice_settings: VoiceSettings = {
         'voice': args.voice,
         'crossFadeOffsetRate': args.crossfade_offset_rate,
@@ -272,10 +284,10 @@ if __name__ == "__main__":
         'vad': args.vad
     }
 
-    main(args.url, 
-         args.auth, 
-         input_device, 
+    main(args.url,
+         args.auth,
+         input_device,
          output_device,
-         chunk_size, 
+         chunk_size,
          args.wave_file_path,
          voice_settings)

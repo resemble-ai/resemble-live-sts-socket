@@ -1,6 +1,7 @@
 import sounddevice as sd
 import logging
 
+
 def list_devices(device_type='input'):
     """
     List audio devices based on the device type (input or output).
@@ -19,10 +20,11 @@ def list_devices(device_type='input'):
     print(f"\n{device_type.capitalize()} Devices:")
     for i, device in enumerate(devices):
         if (device_type == 'input' and device['max_input_channels'] >= 1) or \
-           (device_type == 'output' and device['max_output_channels'] >= 1):
+                (device_type == 'output' and device['max_output_channels'] >= 1):
             print(f"{i}: {device['name']}")
             indices.add(i)
     return indices
+
 
 def choose_device(device_type='input'):
     """
@@ -45,6 +47,7 @@ def choose_device(device_type='input'):
                 print(f"Selected index is not a {device_type} device. Please choose another device.")
         except (ValueError, IndexError):
             print("Invalid index. Please enter a valid device index from the list.")
+
 
 def choose_devices():
     """
