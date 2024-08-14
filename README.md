@@ -30,7 +30,7 @@ python main.py --url <server_url> --voice <voice>
 # Or if you are using authentication
 python main.py --url <server_url> --voice <voice> --auth <username:password>
 ```
-If you do not want to input your microphone and speaker id each time, then the following command with the id you have been choosing:
+If you do not want to input your microphone and speaker IDs each time, then the use following command with the two IDs you have been choosing:
 ```sh
 python main.py --url <server_url> --voice <voice> \
                --input_device <microphone id> \
