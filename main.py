@@ -4,7 +4,7 @@
 #                                                                         #
 # Date:    2024-08-14                                                     #
 # Rev:     1.1                                                            #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 import sounddevice as sd
 import numpy as np
@@ -16,6 +16,7 @@ import queue
 import base64
 import time
 import wave
+import json
 
 from constants import SAMPLERATE, CHUNK_SIZE_MULT, AUDIO_FORMAT, ENDPOINT
 from datatypes import MessageResponse, AudioData, VoiceSettings, HTTPStatus
@@ -69,14 +70,15 @@ class SynthesizeNamespace(socketio.ClientNamespace):
         msg (MessageResponse): The message received from the server.
         """
         status = HTTPStatus(msg['status'])
-
+        if isinstance(msg['message'], dict) or isinstance(msg['message'], list):
+            msg['message'] = json.dumps(msg['message'], indent=2)
         # check if the message is in the 200s, 300s, or 400s and log accordingly
         if status < 300:
-            logging.info(f'[SIO↓] {msg["message"]}')
+            logging.info(f'[SIO↓] {msg["endpoint"]}: {msg["message"]}')
         elif status < 400:
-            logging.warning(f'[SIO↓] {msg["message"]}')
+            logging.warning(f'[SIO↓] {msg["endpoint"]}: {msg["message"]}')
         else:
-            logging.error(f'[SIO↓] {msg["message"]}')
+            logging.error(f'[SIO↓] {msg["endpoint"]}: {msg["message"]}')
 
     def change_settings(self, settings: VoiceSettings):
         """
@@ -108,6 +110,18 @@ class SynthesizeNamespace(socketio.ClientNamespace):
 
         logging.info('[SIO↑] Getting settings...')
         self.emit('get_settings')
+
+    def get_voices(self):
+        """
+        Get a list of voices from the server.
+        """
+        self.emit('get_voices')
+
+    def get_gpus(self):
+        """
+        Get a list of GPUs from the server.
+        """
+        self.emit('get_gpus')
 
 
 def audio_callback(indata: np.ndarray, frames: int, t: object, status: sd.CallbackFlags) -> None:
@@ -198,8 +212,10 @@ def main(server_url: str,
     # Update and read server parameters
     synthesize.change_settings(voice_settings)
     synthesize.get_settings()
+    synthesize.get_voices()
+    synthesize.get_gpus()
 
-    # Setup the wav file
+    # Set up the wav file
     wav_file = wave.open(wav_file_path, 'wb')
     wav_file.setnchannels(1)
     wav_file.setsampwidth(2)  # 2 bytes for int16

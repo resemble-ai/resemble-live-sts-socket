@@ -6,6 +6,7 @@ from http import HTTPStatus
 class MessageResponse(TypedDict):
     status: HTTPStatus
     message: str | dict
+    endpoint: str
 
 
 class AudioData(TypedDict):

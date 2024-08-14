@@ -111,6 +111,7 @@ All data sent to and from the server will be in the following data types.
 class MessageResponse(TypedDict):
     status: HTTPStatus
     message: str | dict
+    endpoint: str
 class AudioData(TypedDict):
     timestamp: int      # milliseconds
     audio_data: bytes   # packed little-endian short integers
