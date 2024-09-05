@@ -81,6 +81,11 @@ This implementation uses Socket.IO to connect to the server and achieves real-ti
     - Description: Sends audio data to the server
     - Data type: `AudioData`
     - Triggers: `on_response`
+- **request_conversion_debug**:
+  - Type: `Emit`
+  - Description: Identical to `request_conversion`, but asks the server to return the unconverted audio. This is good for testing the effects of server latency on local audio stitching on clean audio
+  - Data type: `AudioData`
+  - Triggers: `on_response`
 - **update_model_settings**: 
     - Type: `Emit`
     - Description: Sends updated settings to the server
@@ -90,6 +95,14 @@ This implementation uses Socket.IO to connect to the server and achieves real-ti
     - Type: `Emit`
     - Description: Requests the current settings dict from the server.
     - Triggers: `on_message`
+- **get_voices**:
+  - Type: `Emit`
+  - Description: Requests a list of available voices from the server.
+  - Triggers: `on_message`
+- **get_gpus**:
+  - Type `Emit`
+  - Description: Requests a list of available GPUs from the server.
+  - Triggers: `on_message`
 - **on_connect**:
     - Type: `Response`
     - Description: Callback for when a connection is established to the server
