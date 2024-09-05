@@ -3,7 +3,7 @@
 # server using Socket.IO for real-time voice conversion.                  #
 #                                                                         #
 # Date:    2024-08-14                                                     #
-# Rev:     1.1                                                            #
+# Rev:     1.2                                                            #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 import sounddevice as sd
